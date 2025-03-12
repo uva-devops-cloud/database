@@ -41,10 +41,9 @@ jobs:
           # echo "DB_PASSWORD=$DB_PASSWORD" >> $GITHUB_ENV
 
       - name: Run Flyway migrations
-        uses: red-gate/flyway-cli-action@v1
+        uses: kamilkisiela/flyway-action@v1
         with:
           url: jdbc:postgresql://${{ secrets.DB_ENDPOINT }}:5432/studentportal
           user: dbadmin
           password: ${{ secrets.DB_PASSWORD }}
           locations: filesystem:./migrations
-          command: migrate
