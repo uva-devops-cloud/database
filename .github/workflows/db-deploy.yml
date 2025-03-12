@@ -9,6 +9,11 @@ on:
       aws_account_id:
         required: true
         type: string
+    secrets:
+      db_endpoint_secret:
+        required: true
+      db_password_secret:
+        required: true
 
 permissions:
   id-token: write
