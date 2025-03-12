@@ -45,7 +45,7 @@ jobs:
           docker run --rm \
             -v $(pwd)/migrations:/flyway/sql \
             flyway/flyway:9.22 \
-            -url="jdbc:postgresql://${{ secrets.DB_ENDPOINT }}:5432/studentportal" \
+            -url="jdbc:postgresql://${{ secrets.db_endpoint_secret }}:5432/studentportal" \
             -user=dbadmin \
-            -password="${{ secrets.DB_PASSWORD }}" \
+            -password="${{ secrets.db_password_secret }}" \
             migrate
