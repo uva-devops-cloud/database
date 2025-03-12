@@ -1,0 +1,42 @@
+name: Deploy and Migrate
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve
+
+  flyway-migrate:
+    runs-on: ubuntu-latest
+    # Ensures this job doesn't start until 'terraform-deploy' finishes successfully
+    needs: terraform-deploy
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Run Flyway migrations
+        uses: flyway-actions/flyway@v2
+        with:
+          args: migrate
+        env:
+          # Replace these with the actual secrets in your GitHub repo settings
+          FLYWAY_URL: "jdbc:postgresql://${{ secrets.DB_ENDPOINT }}:5432/studentportal"
+          FLYWAY_USER: dbadmin
+          FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          # Points to your local 'migrations' folder, which contains the Flyway SQL files
+          FLYWAY_LOCATIONS: "filesystem:./migrations"
