@@ -41,9 +41,11 @@ jobs:
           # echo "DB_PASSWORD=$DB_PASSWORD" >> $GITHUB_ENV
 
       - name: Run Flyway migrations
-        uses: kamilkisiela/flyway-action@v1
-        with:
-          url: jdbc:postgresql://${{ secrets.DB_ENDPOINT }}:5432/studentportal
-          user: dbadmin
-          password: ${{ secrets.DB_PASSWORD }}
-          locations: filesystem:./migrations
+        run: |
+          docker run --rm \
+            -v $(pwd)/migrations:/flyway/sql \
+            flyway/flyway:9.22 \
+            -url="jdbc:postgresql://${{ secrets.DB_ENDPOINT }}:5432/studentportal" \
+            -user=dbadmin \
+            -password="${{ secrets.DB_PASSWORD }}" \
+            migrate
