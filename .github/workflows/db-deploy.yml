@@ -1,30 +1,62 @@
-name: Deploy and Migrate
+name: Terraform Deployment (Reusable)
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      aws_account_id:
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  terraform-deploy:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+    env:
+      TF_VERSION: "1.11.0-rc3"
+      AWS_REGION: "eu-west-2"
 
-      - name: Set up Terraform
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::${{inputs.aws_account_id}}:role/GitHubTerraformDeployRole
+          role-session-name: GitHubTerraformSession
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: Terraform init
-        run: terraform init
+      - name: Terraform Init
+        run: terraform init -backend-config=backend-${{inputs.environment}}.config
+        working-directory: .
 
-      - name: Terraform apply
-        run: terraform apply -auto-approve
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: .
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: .
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: .
+
 
   flyway-migrate:
     runs-on: ubuntu-latest
     # Ensures this job doesn't start until 'terraform-deploy' finishes successfully
-    needs: terraform-deploy
+    needs: deploy
     steps:
       - name: Check out code
         uses: actions/checkout@v3
