@@ -23,7 +23,7 @@ jobs:
     name: Deploy to Prod
     needs: deploy-dev
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    uses: ./.github/workflows/terraform-deploy.yml
+    uses: ./.github/workflows/db-deploy.yml
     with:
       environment: prod
       aws_account_id: "054037129431"
