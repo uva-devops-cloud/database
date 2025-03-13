@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
-const { Client } = require('pg');
+const pg = require('pg');
+const Client = pg.Client;
 
 const SecretsManager = new AWS.SecretsManager();
 const S3 = new AWS.S3();
