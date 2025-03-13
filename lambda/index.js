@@ -1,11 +1,10 @@
-import AWS from 'aws-sdk';
-import pkg from 'pg';
-const { Client } = pkg;
+const AWS = require('aws-sdk');
+const { Client } = require('pg');
 
 const SecretsManager = new AWS.SecretsManager();
 const S3 = new AWS.S3();
 
-export const handler = async function(event) {
+exports.handler = async function(event) {
   console.log('Starting database migration job');
   
   // Get DB credentials from Secrets Manager
