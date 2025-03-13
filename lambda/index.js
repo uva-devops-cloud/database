@@ -27,7 +27,8 @@ exports.handler = async function(event) {
     }).promise();
     logWithTimestamp('Successfully retrieved database credentials');
     
-    const secretData = JSON.parse(secret.SecretString);
+    // Use the secret string directly as password (no JSON parsing)
+    const password = secret.SecretString;
     logWithTimestamp(`Using database: ${process.env.DB_NAME} on host ${process.env.DB_HOST}`);
     
     // Connect to DB
@@ -36,7 +37,7 @@ exports.handler = async function(event) {
       host: process.env.DB_HOST,
       database: process.env.DB_NAME,
       user: 'dbadmin',
-      password: secretData.password,
+      password: password, // Use password directly instead of secretData.password
       port: 5432,
       // Add connection timeout
       connectionTimeoutMillis: 10000,
