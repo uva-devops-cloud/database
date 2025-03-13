@@ -28,7 +28,7 @@ exports.handler = async function(event) {
     logWithTimestamp('Successfully retrieved database credentials');
     
     // Use the secret string directly as password (no JSON parsing)
-    const password = secret.SecretString;
+    const password = secret;
     logWithTimestamp(`Using database: ${process.env.DB_NAME} on host ${process.env.DB_HOST}`);
     
     // Connect to DB
