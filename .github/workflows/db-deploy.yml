@@ -10,20 +10,31 @@ on:
         required: true
         type: string
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy-migrations:
+    name: Deploy to ${{ inputs.environment}}
     runs-on: ubuntu-latest
+    env:
+      TF_VERSION: "1.11.0-rc3"
+      AWS_REGION: "eu-west-2"
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubTerraformDeployRole
-          aws-region: eu-west-2
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/GitHubDatabaseMigrateRole
+          role-session-name: GitHubDatabaseMigrateSession
+          aws-region: ${{ env.AWS_REGION}}
 
       - name: Upload migrations to S3
-        run: aws s3 sync ./migrations/ s3://db-migrations-${{ secrets.AWS_ACCOUNT_ID }}/migrations/
+        run: aws s3 sync ./migrations/ s3://db-migrations-${{ inputs.AWS_ACCOUNT_ID }}/migrations/
 
       - name: Install Node.js
         uses: actions/setup-node@v3

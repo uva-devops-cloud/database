@@ -1,4 +1,4 @@
-name: Main Terraform Workflow
+name: Main Migration Workflow
 
 on:
   push:
