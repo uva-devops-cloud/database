@@ -22,13 +22,14 @@ exports.handler = async function(event) {
   try {
     // Get DB credentials from Secrets Manager
     logWithTimestamp('Retrieving database credentials from Secrets Manager');
-    const secret = await SecretsManager.getSecretValue({
+    const secretResponse = await SecretsManager.getSecretValue({
       SecretId: process.env.DB_SECRET_ARN
     }).promise();
     logWithTimestamp('Successfully retrieved database credentials');
     
-    // Use the secret string directly as password (no JSON parsing)
-    const password = secret;
+    // Extract the SecretString from the response
+    const password = secretResponse.SecretString;
+    logWithTimestamp(`Secret string length: ${password ? password.length : 0}`);
     logWithTimestamp(`Using database: ${process.env.DB_NAME} on host ${process.env.DB_HOST}`);
     
     // Connect to DB
@@ -37,7 +38,7 @@ exports.handler = async function(event) {
       host: process.env.DB_HOST,
       database: process.env.DB_NAME,
       user: 'dbadmin',
-      password: password, // Use password directly instead of secretData.password
+      password: password, // Now correctly using just the secret string
       port: 5432,
       // Add connection timeout
       connectionTimeoutMillis: 10000,
