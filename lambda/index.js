@@ -7,24 +7,29 @@ const S3 = new AWS.S3();
 exports.handler = async function(event) {
   console.log('Starting database migration job');
   
-  // Get DB credentials from Secrets Manager
-  const secret = await SecretsManager.getSecretValue({
-    SecretId: process.env.DB_SECRET_ARN
-  }).promise();
-  
-  const password = JSON.parse(secret.SecretString);
-  
-  // Connect to DB
-  const client = new Client({
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    user: 'dbadmin',
-    password: password,
-    port: 5432,
-  });
-  
   try {
+    // Get DB credentials from Secrets Manager
+    console.log('Retrieving database credentials from Secrets Manager');
+    const secret = await SecretsManager.getSecretValue({
+      SecretId: process.env.DB_SECRET_ARN
+    }).promise();
+    console.log('Successfully retrieved database credentials');
+    
+    const password = JSON.parse(secret.SecretString);
+    
+    // Connect to DB
+    console.log('Connecting to database:', process.env.DB_HOST);
+    const client = new Client({
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      user: 'dbadmin',
+      password: password,
+      port: 5432,
+    });
+    
+    console.log('Attempting database connection');
     await client.connect();
+    console.log('Successfully connected to database');
     
     // Create migrations table if doesn't exist
     await client.query(`
