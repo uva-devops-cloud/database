@@ -4,8 +4,10 @@
     "description": "Database migration runner for student portal",
     "main": "index.js",
     "dependencies": {
-        "aws-sdk": "^2.1502.0",
         "db-migration-runner": "file:",
         "pg": "^8.11.3"
+    },
+    "devDependencies": {
+        "aws-sdk": "^2.1502.0"
     }
 }
