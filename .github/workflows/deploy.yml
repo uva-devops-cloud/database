@@ -33,3 +33,4 @@ jobs:
     secrets:
       db_password_secret: ${{ secrets.DB_PASSWORD }}
       db_endpoint_secret: ${{ secrets.DB_ENDPOINT }}
+

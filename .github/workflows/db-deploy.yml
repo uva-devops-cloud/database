@@ -1,3 +1,5 @@
+
+
 name: Database Migration (Reusable)
 
 on:
@@ -9,48 +11,29 @@ on:
       aws_account_id:
         required: true
         type: string
-    secrets:
-      db_endpoint_secret:
-        required: true
-      db_password_secret:
-        required: true
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  flyway-migrate:
-    name: Run migrations for ${{ inputs.environment }}
+  deploy-migrations:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials using OIDC
+      - uses: actions/checkout@v4
+      
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::${{inputs.aws_account_id}}:role/GitHubTerraformDeployRole
-          role-session-name: GitHubFlywaySession
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/GitHubTerraformDeployRole
           aws-region: eu-west-2
-
-      - name: Get DB info from AWS (if needed)
-        run: |
-          # Optional - get endpoint from AWS if not stored as secret
-          # DB_ENDPOINT=$(aws rds describe-db-instances --db-instance-identifier student-portal-db --query 'DBInstances[0].Endpoint.Address' --output text)
-          # echo "DB_ENDPOINT=$DB_ENDPOINT" >> $GITHUB_ENV
+      
+      - name: Upload migrations to S3
+        run: aws s3 sync ./migrations/ s3://db-migrations-${{ inputs.AWS_ACCOUNT_ID }}/migrations/
           
-          # Optional - get password from secrets manager if not stored as GitHub secret
-          # DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id studentportal-db-password-${{inputs.aws_account_id}} --query 'SecretString' --output text)
-          # echo "::add-mask::$DB_PASSWORD"
-          # echo "DB_PASSWORD=$DB_PASSWORD" >> $GITHUB_ENV
-
-      - name: Run Flyway migrations
+      - name: Invoke migration Lambda
         run: |
-          docker run --rm \
-            -v $(pwd)/migrations:/flyway/sql \
-            flyway/flyway:9.22 \
-            -url="jdbc:postgresql://${{ secrets.db_endpoint_secret }}:5432/studentportal" \
-            -user=dbadmin \
-            -password="${{ secrets.db_password_secret }}" \
-            migrate
+          aws lambda invoke \
+            --function-name db-migration-runner \
+            --payload '{}' \
+          response.json
