@@ -1,13 +1,21 @@
 {
-    "name": "db-migration-runner",
+    "name": "database-migration-lambda",
     "version": "1.0.0",
-    "description": "Database migration runner for student portal",
+    "description": "Lambda function for PostgreSQL database migrations",
     "main": "index.js",
-    "dependencies": {
-        "db-migration-runner": "file:",
-        "pg": "^8.11.3"
+    "type": "module",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "zip": "zip -r function.zip index.js node_modules package.json",
+      "build": "npm install --production && npm run zip"
     },
-    "devDependencies": {
-        "aws-sdk": "^2.1502.0"
-    }
-}
+    "dependencies": {
+      "aws-sdk": "^2.1467.0",
+      "pg": "^8.11.3"
+    },
+    "engines": {
+      "node": ">=18.0.0"
+    },
+    "author": "",
+    "license": "ISC"
+  }

@@ -1,11 +1,11 @@
-const AWS = require('aws-sdk');
-const { Client } = require('pg');
+import { SecretsManager, S3 } from 'aws-sdk';
+import { Client } from 'pg';
 
-exports.handler = async (event) => {
+export async function handler(event) {
   console.log('Starting database migration job');
   
   // Get DB credentials from Secrets Manager
-  const secretsManager = new AWS.SecretsManager();
+  const secretsManager = new SecretsManager();
   const secret = await secretsManager.getSecretValue({
     SecretId: process.env.DB_SECRET_ARN
   }).promise();
@@ -33,7 +33,7 @@ exports.handler = async (event) => {
     `);
     
     // Download migrations from S3
-    const s3 = new AWS.S3();
+    const s3 = new S3();
     const { Contents } = await s3.listObjects({
       Bucket: process.env.MIGRATIONS_BUCKET,
       Prefix: 'migrations/'
@@ -100,4 +100,4 @@ exports.handler = async (event) => {
   } finally {
     await client.end();
   }
-};
+}
