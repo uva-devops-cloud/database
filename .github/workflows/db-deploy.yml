@@ -33,13 +33,6 @@ jobs:
           role-session-name: GitHubDatabaseMigrateSession
           aws-region: ${{ env.AWS_REGION}}
 
-      - name: Update AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
-
       - name: Upload migrations to S3
         run: aws s3 sync ./migrations/ s3://db-migrations-${{ inputs.AWS_ACCOUNT_ID }}/migrations/
 
@@ -54,11 +47,16 @@ jobs:
           npm install --production
           zip -r ../db-migration.zip .
 
-      - name: Update Lambda code
+      - name: Upload Lambda package to S3
+        run: |
+          aws s3 cp db-migration.zip s3://db-migrations-${{ inputs.AWS_ACCOUNT_ID }}/lambda/db-migration.zip
+
+      - name: Update Lambda code from S3
         run: |
           aws lambda update-function-code \
             --function-name db-migration-runner \
-            --zip-file fileb://db-migration.zip
+            --s3-bucket db-migrations-${{ inputs.AWS_ACCOUNT_ID }} \
+            --s3-key lambda/db-migration.zip
 
       - name: Invoke migration Lambda
         run: |
