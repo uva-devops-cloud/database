@@ -1,5 +1,3 @@
-
-
 name: Database Migration (Reusable)
 
 on:
@@ -18,22 +16,53 @@ permissions:
 
 jobs:
   deploy-migrations:
+    name: Deploy to ${{ inputs.environment}}
     runs-on: ubuntu-latest
+    env:
+      AWS_REGION: "eu-west-2"
+
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/GitHubTerraformDeployRole
-          aws-region: eu-west-2
-      
+          role-to-assume: arn:aws:iam::${{ inputs.aws_account_id }}:role/GitHubDatabaseMigrateRole
+          role-session-name: GitHubDatabaseMigrateSession
+          aws-region: ${{ env.AWS_REGION}}
+
       - name: Upload migrations to S3
-        run: aws s3 sync ./migrations/ s3://db-migrations-${{ inputs.AWS_ACCOUNT_ID }}/migrations/
-          
+        run: aws s3 sync ./migrations/ s3://db-migrations-${{ inputs.aws_account_id }}/migrations/
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Build Lambda package
+        run: |
+          cd lambda
+          npm install --production
+          zip -r ../db-migration.zip .
+
+      - name: Upload Lambda package to S3
+        run: |
+          aws s3 cp db-migration.zip s3://db-migrations-${{ inputs.AWS_ACCOUNT_ID }}/lambda/db-migration.zip
+
+      - name: Update Lambda code from S3
+        run: |
+          aws lambda update-function-code \
+            --function-name db-migration-runner \
+            --s3-bucket db-migrations-${{ inputs.AWS_ACCOUNT_ID }} \
+            --s3-key lambda/db-migration.zip
+
       - name: Invoke migration Lambda
         run: |
           aws lambda invoke \
             --function-name db-migration-runner \
             --payload '{}' \
-          response.json
+            response.json
+
+      - name: Check migration result
+        run: cat response.json
