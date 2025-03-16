@@ -1,4 +1,3 @@
-
 -- Enrollments (Student ↔ Program)
 INSERT INTO enrollments
     (student_id, program_id, gpa, enrollment_status, start_date)
@@ -15,17 +14,17 @@ INSERT INTO student_course_enrollment
     (student_id, course_id, program_id, grade, status, semester)
 VALUES
     -- Jan's courses
-    (1, 1, 1, 'A-', 'COMPLETED', 'Fall 2021'),
+    (1, 1, 1, 'A-', 'COMPLETED', 'Fall 21'),
     -- CS101 in CS program
-    (1, 2, 1, 'B+', 'IN_PROGRESS', 'Spring 2022'),
+    (1, 2, 1, 'B+', 'IN_PROGRESS', 'Spring 22'),
     -- CS102 in CS program
 
     -- Merlijn's courses
-    (2, 1, 1, 'A', 'COMPLETED', 'Fall 2022'),
+    (2, 1, 1, 'A', 'COMPLETED', 'Fall 22'),
     -- CS101 in CS program
-    (2, 2, 1, 'A-', 'IN_PROGRESS', 'Spring 2023'),
+    (2, 2, 1, 'A-', 'IN_PROGRESS', 'Spring 23'),
     -- CS102 in CS program
-    (2, 3, 2, 'A+', 'COMPLETED', 'Fall 2022');
+    (2, 3, 2, 'A+', 'COMPLETED', 'Fall 22');
 -- BUS101 in Business program
 
 -- Usage Info (LLM credits)
